@@ -133,6 +133,7 @@ function MainContent() {
               icon={addCircle}
               description="Add Registration Workflow"
               centered
+              asButton
             />
             {/* <BlankCard />
               <BlankCard /> */}

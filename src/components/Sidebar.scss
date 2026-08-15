@@ -1,35 +1,133 @@
 @use "../styles/tokens.generated" as *;
 @use "../styles/breakpoints" as *;
 
+// Mobile-first: base rules below are the smallest-screen state (nav
+// collapsed behind a toggle). Desktop is the enhancement, added back at
+// $bp-lg — that's when the sidebar becomes always-open with no toggle.
+.sidebar__container {
+  position: relative;
+  z-index: 1001;
+  width: $spacing-xl * 2;
+
+  @media (min-width: $bp-md) {
+    width: $spacing-xl * 2;
+  }
+}
+
+@media (min-width: $bp-lg) {
+  .sidebar__container {
+    width: auto;
+  }
+}
+
 .sidebar {
-  flex-shrink: 0;
+  // flex-shrink: 0;
   align-self: flex-start;
   position: sticky;
   top: 0;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: $spacing-md $spacing-sm;
   border-right: 1px solid $color-border;
   transition: width 0.2s ease;
 
+  @media (min-width: $bp-md) {
+    padding: $spacing-md;
+  }
+
+  &__content {
+    // margin-top: $spacing-sm;
+  }
+
   &__toggle {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    // margin: 0 auto;
+    border: none;
+    background: $color-surface-muted;
+    color: $color-text-muted;
+    border-radius: $radius-md;
+    flex-shrink: 0;
+
+    position: fixed;
+    top: $spacing-md;
+    left: $spacing-md;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   &__header {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-sm $spacing-sm $spacing-md;
+    gap: $spacing-xs;
+    // padding: $spacing-sm $spacing-sm $spacing-md;
+    padding: $spacing-lg $spacing-sm $spacing-md $spacing-xl * 2;
+  }
+
+  @media (min-width: $bp-md) {
+    .sidebar__header {
+      padding: 0;
+    }
   }
 
   &__title {
+    display: none;
     font-size: $type-nav-size;
     font-weight: $type-nav-weight;
     line-height: $type-nav-lineHeight;
     color: $color-text-primary;
     margin: 0;
+  }
+
+  &__content {
+    padding: 0 $spacing-md;
+    display: none;
+  }
+
+  &__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 35;
+  }
+
+  // Drawer: below desktop, the expanded sidebar becomes a fixed overlay
+  // instead of pushing content over. Full screen at true xs, a
+  // responsive (not full-width) panel from $bp-sm up — the rail's own
+  // floating toggle already sits above this, so the drawer starts at
+  // the true left edge rather than being offset by the rail.
+  &.is-expanded {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 100vw;
+    z-index: 40;
+    background: $color-surface;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.15);
+
+    @media (min-width: $bp-md) {
+      .sidebar__header {
+        padding: 0;
+      }
+    }
+
+    .sidebar__title {
+      display: block;
+    }
+
+    .sidebar__content {
+      display: block;
+    }
+
+    @media (min-width: $bp-sm) {
+      width: min(360px, 70vw);
+    }
   }
 
   &__details {
@@ -38,7 +136,27 @@
     line-height: $type-nav-detail-lineHeight;
     color: #000;
     margin: 0;
-    padding: 0 $spacing-sm $spacing-md;
+    // padding: 0 $spacing-sm $spacing-md;
+  }
+
+  @media (min-width: $bp-sm) {
+    .sidebar__details {
+      // padding: 0 $spacing-sm $spacing-md $spacing-xl * 2;
+    }
+  }
+
+  @media (min-width: $bp-md) {
+    .sidebar__details {
+      // text-align: center;
+      padding: 0;
+    }
+  }
+
+  @media (min-width: $bp-lg) {
+    .sidebar__details {
+      // text-align: left;
+      // padding: 0;
+    }
   }
 
   &__dot {
@@ -50,7 +168,7 @@
     display: flex;
     align-items: center;
     gap: $spacing-xs;
-    margin: 0 $spacing-sm $spacing-md;
+    margin: $spacing-sm 0;
     padding: $spacing-xs;
     background: $color-surface-muted;
     border-radius: $radius-sm;
@@ -86,13 +204,13 @@
   &__nav {
     list-style: none;
     margin: 0;
-    padding: 0 $spacing-sm;
+    padding: 0;
   }
 
   &__nav-item {
     display: flex;
     align-items: center;
-    gap: $spacing-md;
+    gap: $spacing-sm;
     padding: $spacing-sm $spacing-md;
     border-radius: $radius-md;
     font-size: $type-nav-size;
@@ -130,41 +248,61 @@
     }
   }
 
-  @media (max-width: $bp-lg) {
-    padding: $spacing-md 0;
-
+  // Tablet ($bp-md–$bp-lg): back to the hamburger living inline in its
+  // own second column, not floating — and expanding pushes content over
+  // in place instead of opening as a fixed drawer. The floating-toggle
+  // drawer overlay is a true-mobile (below $bp-md) pattern only.
+  @media (min-width: $bp-md) {
     &__toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      margin: 0 auto;
-      border: none;
-      background: none;
-      color: $color-text-muted;
-      flex-shrink: 0;
-      background: $color-surface-muted;
-      border-radius: $radius-md;
-      padding: 0.6rem;
+      position: static;
+      top: auto;
+      left: auto;
     }
 
-    &__title {
-      display: none;
-    }
-
-    &__content {
-      display: none;
+    &__backdrop {
+      // display: none;
+      z-index: 0;
     }
 
     &.is-expanded {
-      .sidebar__title {
-        display: block;
-      }
+      position: absolute;
+      z-index: 1001;
+      inset: auto;
+      width: auto;
+      // box-shadow: none;
+      z-index: 1001;
+      min-width: 360px;
+    }
+  }
 
-      .sidebar__content {
-        display: block;
-      }
+  @media (min-width: $bp-lg) {
+    padding: $spacing-md $spacing-sm;
+
+    &__toggle {
+      display: none;
+    }
+
+    &__title {
+      display: block;
+    }
+
+    &__content {
+      display: block;
+    }
+
+    &__backdrop {
+      display: none;
+    }
+
+    // Desktop never uses the drawer overlay — sidebar stays in normal
+    // flow (sticky, pushes nothing, no backdrop) same as the
+    // non-expanded state, regardless of leftover expanded state.
+    &.is-expanded {
+      position: sticky;
+      inset: auto;
+      width: auto;
+      box-shadow: none;
+      z-index: auto;
     }
   }
 }

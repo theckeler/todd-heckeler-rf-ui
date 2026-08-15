@@ -7,9 +7,15 @@ export function Card({
   title,
   description,
   centered = false,
+  asButton = false,
 }) {
+  const Tag = asButton ? "button" : "div";
+
   return (
-    <div className={`card ${centered ? "card--centered" : ""}`}>
+    <Tag
+      type={asButton ? "button" : undefined}
+      className={`card ${centered ? "card--centered" : ""}`}
+    >
       <div className="card__heading">
         <img
           src={icon}
@@ -19,7 +25,7 @@ export function Card({
         {title && <h3 className="card__title">{title}</h3>}
       </div>
       {description && <p className="card__description">{description}</p>}
-    </div>
+    </Tag>
   );
 }
 
