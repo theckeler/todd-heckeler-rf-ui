@@ -1,39 +1,44 @@
 @use "../styles/tokens.generated" as *;
 @use "../styles/breakpoints" as *;
 
+// Mobile-first: base rules are the smallest-screen state. $bp-md enhances
+// to tablet, $bp-lg enhances to desktop (desktop values match the
+// Figma-verified tokens exactly — not touched by this restructure).
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: $spacing-xxl;
-  padding: $spacing-xxl $spacing-xxxl;
+  gap: $spacing-lg;
+  padding: $spacing-md;
 
-  @media (max-width: $bp-lg) {
-    padding: $spacing-xl;
-  }
-
-  // Tablet only ($bp-md–$bp-lg) — tighter than the general $bp-lg rule
-  // above. Mobile (below $bp-md) is its own pass, not touched here.
-  @media (max-width: $bp-lg) and (min-width: $bp-md) {
+  @media (min-width: $bp-md) {
     padding: $spacing-lg;
-    gap: $spacing-lg;
   }
 
-  @media (max-width: $bp-md) {
-    padding: $spacing-lg $spacing-md;
-    gap: $spacing-xl;
+  @media (min-width: $bp-lg) {
+    padding: $spacing-xxl $spacing-xxxl;
+    gap: $spacing-xxl;
   }
 }
 
 .event-header {
   display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: $spacing-md;
 
+  // Experiment per Todd: true xs (below $bp-sm) gets a full-width banner
+  // icon with the title/date dropping below it. $bp-sm and up goes back
+  // to the side-by-side row — held to Tailwind's xs/sm line specifically
+  // per Todd, not the wider $bp-md mobile range.
+  @media (min-width: $bp-sm) {
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
   &__logo {
-    width: 95px;
-    height: 95px;
+    width: 100%;
+    height: 140px;
     border-radius: $radius-md;
     overflow: hidden;
     flex-shrink: 0;
@@ -42,17 +47,25 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scale(1.4);
+
+      // The 1.4x zoom is tuned to crop out the source image's padding
+      // when it's displayed in a small square box. Applied to the wide
+      // mobile banner instead, that same zoom crops way more of the
+      // image than intended — so it only applies once the logo goes
+      // back to being a square icon at $bp-sm+.
+      @media (min-width: $bp-sm) {
+        transform: scale(1.4);
+      }
     }
 
-    @media (max-width: $bp-lg) and (min-width: $bp-md) {
+    @media (min-width: $bp-sm) {
       width: 72px;
       height: 72px;
     }
 
-    @media (max-width: $bp-md) {
-      width: 64px;
-      height: 64px;
+    @media (min-width: $bp-lg) {
+      width: 95px;
+      height: 95px;
     }
   }
 
@@ -63,24 +76,32 @@
     gap: $spacing-sm;
 
     h1 {
-      font-size: $type-h1-size;
+      font-size: 22px;
       font-weight: $type-h1-weight;
       line-height: $type-h1-lineHeight;
       color: $color-text-primary;
+      margin: 0;
 
-      @media (max-width: $bp-lg) and (min-width: $bp-md) {
+      @media (min-width: $bp-sm) {
         font-size: 26px;
       }
-      margin: 0;
+
+      @media (min-width: $bp-lg) {
+        font-size: $type-h1-size;
+      }
     }
   }
 
   &__details {
     p {
-      font-size: $type-body-size;
+      font-size: 13px;
       line-height: $type-body-lineHeight;
       color: $color-text-body;
       margin: 0;
+
+      @media (min-width: $bp-sm) {
+        font-size: $type-body-size;
+      }
     }
   }
 
@@ -92,6 +113,11 @@
     padding: $spacing-sm $spacing-md;
     font-size: $type-button-size;
     font-weight: $type-button-weight;
+    width: 100%;
+
+    @media (min-width: $bp-md) {
+      width: auto;
+    }
   }
 }
 
@@ -101,20 +127,28 @@
   gap: $spacing-md;
 
   h2 {
-    font-size: $type-h2-size;
+    font-size: 18px;
     font-weight: $type-h2-weight;
     color: $color-text-primary;
     margin: 0;
 
-    @media (max-width: $bp-lg) and (min-width: $bp-md) {
+    @media (min-width: $bp-md) {
       font-size: 20px;
+    }
+
+    @media (min-width: $bp-lg) {
+      font-size: $type-h2-size;
     }
   }
 
   p {
-    font-size: $type-body-size;
+    font-size: 13px;
     line-height: $type-body-lineHeight;
     color: $color-text-body;
+
+    @media (min-width: $bp-md) {
+      font-size: $type-body-size;
+    }
     margin: 0;
   }
 }
@@ -156,20 +190,24 @@
   &__heading {
     display: flex;
     align-items: center;
-    gap: $spacing-lg;
+    gap: $spacing-sm;
 
-    @media (max-width: $bp-lg) and (min-width: $bp-md) {
-      gap: $spacing-sm;
+    @media (min-width: $bp-lg) {
+      gap: $spacing-lg;
     }
 
     h2 {
-      font-size: $type-h3-size;
+      font-size: 16px;
       font-weight: $type-h3-weight;
       color: $color-text-primary;
       margin: 0;
 
-      @media (max-width: $bp-lg) and (min-width: $bp-md) {
+      @media (min-width: $bp-md) {
         font-size: 18px;
+      }
+
+      @media (min-width: $bp-lg) {
+        font-size: $type-h3-size;
       }
     }
   }
@@ -194,23 +232,34 @@
 }
 
 .attribute-box {
-  // display: flex;
-  // flex-wrap: wrap;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: $spacing-xl;
+  // Single column below $bp-sm (safe at any width, including a true
+  // 320px viewport — no minmax floor to overflow). Jumps straight to
+  // the tablet floor (200px) at $bp-sm, matching the header's own
+  // row-layout switch at the same breakpoint — no separate in-between
+  // floor, which was letting a 3rd column sneak in before $bp-md.
+  grid-template-columns: 1fr;
+  gap: $spacing-sm;
   border: 1px solid $color-border;
   border-radius: $radius-sm;
-  padding: $spacing-md $spacing-lg;
+  padding: $spacing-sm;
   min-height: 120px;
 
-  @media (max-width: $bp-lg) and (min-width: $bp-md) {
+  @media (min-width: $bp-sm) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  @media (min-width: $bp-md) {
     gap: $spacing-md;
     padding: $spacing-sm $spacing-md;
   }
 
+  @media (min-width: $bp-lg) {
+    gap: $spacing-xl;
+    padding: $spacing-md $spacing-lg;
+  }
+
   &__col {
-    // flex: 1 1 200px;
     display: flex;
     flex-direction: column;
     gap: $spacing-xs;
@@ -236,30 +285,24 @@
     }
   }
 }
-//
-// .card-rows {
-//   display: flex;
-//   flex-direction: column;
-//   gap: $spacing-md;
-// }
 
 .card-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: $spacing-lg;
-  // max-width: 1073px;
+  // Same reasoning as .attribute-box above — single column below
+  // $bp-sm, straight to the 240px tablet floor at $bp-sm, no separate
+  // in-between floor.
+  grid-template-columns: 1fr;
+  gap: $spacing-sm;
 
-  @media (max-width: $bp-lg) and (min-width: $bp-md) {
+  @media (min-width: $bp-sm) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  @media (min-width: $bp-md) {
     gap: $spacing-md;
   }
 
-  //   &--single {
-  //     .card {
-  //       // flex: 1 1 240px;
-  //
-  //       @media (min-width: $bp-lg) {
-  //         flex: 0 1 calc((100% - #{$spacing-lg} * 2) / 3);
-  //       }
-  //     }
-  //   }
+  @media (min-width: $bp-lg) {
+    gap: $spacing-lg;
+  }
 }

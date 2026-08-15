@@ -302,6 +302,226 @@ complement to the decision log above.
   didn't warrant the "discuss first" gate Todd asked for on anything
   JS-heavy.
 
+## Branching + mobile-first restructure
+
+- **Workflow:** Todd branched `tablet` off `main` and pushed it himself,
+  then had Claude branch `mobile` off `tablet` for this pass — separate
+  branches per breakpoint phase, reviewable and revertible independently
+  rather than one long-running responsive branch.
+- **Decision:** the CSS was desktop-first (base rules = desktop values,
+  `max-width` media queries override down for smaller screens) — flipped
+  to mobile-first (base rules = mobile values, `min-width` queries
+  enhance up through `$bp-md` tablet and `$bp-lg` desktop) across
+  `Sidebar.scss`, `MainContent.scss`, and `Card.scss`. `IconRail.scss`
+  and `main.scss` didn't need it — nothing in them varies by breakpoint.
+  Desktop and tablet values were carried over exactly as already
+  verified; this was a cascade-direction reorganization, not a redesign.
+  Mobile-specific type sizes that didn't exist yet (h1, guide-intro h2,
+  module h2) got real values instead of just inheriting whatever the
+  desktop/tablet rules produced when squeezed down.
+- **Fixed:** the collapsed-nav toggle button was 40×40px with 0.6rem
+  padding and — the actual issue — its SVG icon had no explicit
+  width/height at all, relying on the browser's default un-sized SVG
+  behavior rather than a deliberate size. Todd flagged it as too large
+  for a touch target. Shrunk the button to 32×32px and gave the icon an
+  explicit 16×16px size.
+- **Verified:** desktop confirmed pixel-identical post-refactor via
+  computed styles (not just eyeballing a downscaled screenshot, which
+  briefly looked wrong but wasn't — `getBoundingClientRect()` on the
+  rail and its children matched exactly). Tablet matches prior values.
+  Mobile now has deliberate spacing/type instead of leftover cascade
+  artifacts. The `expanded`-state reset (previous session) still works
+  correctly after the restructure.
+
+## Mobile polish: overflow bug, option-1 merge, real button
+
+- **Real bug caught by doing the math, not just eyeballing:** the
+  browser tool couldn't be resized below ~398px in this environment (a
+  tooling floor, not a page bug), so mobile testing had been happening
+  at ~398px instead of the required 320px minimum. Worked out the actual
+  numbers instead of trusting what the tool would show: at true 320px,
+  nav columns (126px) + main-content padding leave only ~146-162px for
+  the card grids — narrower than the `minmax(200px,…)` /
+  `minmax(240px,…)` floors on `.attribute-box` / `.card-row`, which
+  would have caused real horizontal overflow at the actual minimum
+  supported width even though everything looked fine above 398px.
+  Lowered the floors to 140px/160px — doesn't change tablet/desktop
+  rendering (the existing max-width caps still govern the upper bound),
+  fixes true 320px. Confirmed after: `scrollWidth === innerWidth` at a
+  manually-forced true 320px viewport (the tool does allow exact widths
+  via direct resize, just not below ~398 via the mobile preset).
+- **Option 1 implemented:** icon-rail and the collapsed sidebar now
+  share the same 63px width and no border between them below desktop,
+  so they read as one rail. Border and independent sizing come back at
+  `$bp-lg`.
+- **Self-caught mistake:** first pass at moving the `FL` avatar (off the
+  bottom pin, per Todd's request, to sit right after the icons) applied
+  `justify-content: flex-start` with no breakpoint scoping — changed
+  desktop too, not just mobile/tablet. Desktop's avatar-pinned-to-bottom
+  behavior was previously confirmed correct and explicitly meant to stay
+  untouched. Caught it via a desktop screenshot before reporting back,
+  scoped the change to below `$bp-lg`, restored `space-between` at
+  desktop via `@media (min-width: $bp-lg)`.
+- **Add Registration Workflow is now a real `<button>`:** `Card` takes
+  an `asButton` prop that swaps the wrapping `<div>` for a
+  `<button type="button">`, with a small native-button style reset
+  (`font: inherit`, `cursor: pointer`, background) so it looks identical
+  to the div version. Only that one card — the workflow/portal cards
+  aren't actionable in this design, so they stay `<div>`.
+- **Edit event button:** `width: 100%` at mobile base, `width: auto` at
+  `$bp-md`+ — matches how the button already wraps onto its own row via
+  `flex-wrap` on `.event-header`.
+- **Font-size scale, confirmed end to end:** H1 22/26/32px, guide-intro
+  H2 18/20/24px, module H2 16/18/20px across mobile/tablet/desktop. Body
+  text, step labels, card type, and nav type stay constant across all
+  three (16/14/13/12/14px respectively) — already small enough that
+  further shrinking would hurt readability rather than help density.
+
+## Option-1 merge reverted, mobile header experiment
+
+- **Reverted:** the option-1 icon-rail/sidebar merge (matching 63px
+  width, shared border removal) broke the expanded state — hardcoding
+  `width: 63px` on the base `.sidebar` rule meant `.is-expanded` never
+  got its width back, so the open drawer stayed squeezed into 63px with
+  its content truncating inside it (`RainFocus Summit` rendering as
+  "Ra Su", search box as "Sear"). Todd caught it immediately from his own
+  testing screenshot. Reverted both files back to independent bordered
+  columns — no merge for now. He's taking the mobile nav redesign himself
+  from here.
+- **Mobile font sizes, taken down further:** guide-intro paragraph and
+  the event-header date/location text were both still using the constant
+  16px body token at every breakpoint. Todd's call: too big for mobile.
+  Both now 13px at mobile base, stepping up to the 16px token at `$bp-md`
+  and above — unchanged from before at tablet/desktop.
+- **Mobile header experiment (his idea, untested until now):** on mobile
+  only, the event logo/icon goes full-width as a 140px-tall banner with
+  the H1 dropping below it full-width, instead of sitting side-by-side
+  with the title. Row layout (icon + title side by side) is preserved
+  unchanged at `$bp-md` and up. Explicitly exploratory — Todd wants to
+  see it before deciding if it stays.
+- **Todd's read on the tooling constraint, worth keeping on record:**
+  hand-writing every breakpoint in SCSS for this level of responsive
+  fine-tuning has been noticeably slower than a utility-first approach
+  (Tailwind) would have been — every spacing/type adjustment here is a
+  named rule in a media query, where Tailwind would've been an inline
+  class swap. RainFocus's brief explicitly disallows Tailwind/Bootstrap,
+  so this was never in question, but it's a real, honest tradeoff
+  observation about the cost of that constraint, not a complaint — worth
+  surfacing if the interview gets into process/tooling choices.
+
+## Tablet regression from the overflow fix
+
+- **What broke:** Todd noticed "tablet experience was lost" after the
+  true-320px overflow fix. The fix had lowered `.attribute-box` and
+  `.card-row`'s grid `minmax()` floor (200px→140px, 240px→160px)
+  uniformly across every breakpoint, not just true mobile. A lower floor
+  means more columns fit before the grid wraps — so at tablet widths,
+  Step 2's 4 cards started fitting in a single row instead of wrapping
+  to two, which is what actually changed the *feel* of tablet even
+  though no gap/padding/font value had moved. Didn't catch this in the
+  first pass because desktop and the exact tablet screenshot both looked
+  fine — the regression was in wrapping *behavior*, not in any value
+  visible from a single static screenshot.
+- **Fix:** kept the 140px/160px floor as the base (true mobile), restored
+  the original 200px/240px floor at `$bp-md`+ so tablet (and desktop)
+  wrap exactly as they did before. Confirmed: Step 2 back to 2-up at
+  tablet, 4-up at desktop, still zero horizontal overflow at a real
+  320px viewport.
+
+## Header banner held to true xs, not the whole mobile range
+
+- **Feedback:** the full-width banner header was switching to the
+  side-by-side row layout at `$bp-md` (768px) — Todd's call was that's
+  too early; it should hold through true `xs` (Tailwind's term for
+  anything below `sm`/640px) and only switch to the row layout at `sm`
+  and up, not wait for `md`.
+- **Fix:** moved the whole header block's breakpoint — flex-direction,
+  logo size, h1 size, date/location text size — from `$bp-md` to
+  `$bp-sm` together, so the transition happens as one coordinated jump
+  at 640px instead of spreading across two breakpoints (layout flips at
+  one width, type sizes at another). Confirmed the boundary is exact:
+  639px still shows the banner, 640px switches to the row. Didn't touch
+  the Edit button's width switch (still at `$bp-md`) or anything below
+  `$bp-sm` — Todd didn't flag those, and he's taking the menu itself from
+  here.
+
+## Grid column mismatch + banner logo cropping
+
+- **What Todd caught:** his own edits (single-column grid below `$bp-sm`,
+  a 140px floor at `$bp-sm`, 200px/240px at `$bp-md`) produced an
+  inconsistency he spotted by comparing three widths directly: 772px
+  looked right (2-up), 667px regressed to 3-up, 489px looked right
+  (1-up). The 140px sm-tier floor was simply smaller than the 200px/240px
+  floor that actually produces the 2-up look at tablet, so a width in
+  between let a 3rd column sneak in.
+- **Fix:** removed the separate 140px/160px sm-tier floor entirely.
+  Column count now jumps straight from a literal single `1fr` (below
+  `$bp-sm`, safe at any width with no minmax to overflow) to the real
+  200px/240px tablet floor right at `$bp-sm` — one consistent transition
+  point, matching where the header's own row-layout switch already
+  happens. Confirmed 667px and 772px now render identically (2-up), 489px
+  still 1-up, true 320px still zero overflow.
+- **Also caught mid-fix:** the mobile banner logo was cropping the image
+  — the `scale(1.4)` zoom on the `<img>` was tuned for the small square
+  icon box (72–95px), not a 100%-wide, 140px-tall banner. Applied to the
+  wide banner, the same zoom cropped far more of the circular badge than
+  intended. Scoped the zoom to `$bp-sm`+ (where the logo is back to being
+  a square icon) so the true-mobile banner shows the full image via plain
+  `object-fit: cover`, no extra zoom.
+
+## Drawer overlay + desktop regression from Todd's own menu rework
+
+- **Todd's manual session:** ~30 minutes, done away from the desk
+  (his words: "front of the tv"). He converted the toggle button to
+  `position: fixed` (floating, independent of the sidebar's own box) —
+  a real design shift from the push-open column approach, and one he
+  said he's happy with.
+- **What broke:** the floating toggle needed top clearance so it
+  wouldn't sit on top of the icon-rail's logo, so `.icon-rail__top` got
+  `padding-top: 40px`. That rule had no breakpoint scoping, so it also
+  pushed the logo down at desktop — where the toggle is `display: none`
+  and there's nothing to clear. Result: the rail's logo sat visibly lower
+  than the sidebar title next to it. Scoped the padding to below `$bp-lg`
+  only, `padding-top: 0` at desktop — confirmed pixel-aligned again.
+- **New behavior, built on top of Todd's floating-toggle direction:** the
+  sidebar's expanded state is now a real fixed-position drawer instead of
+  pushing content over, matching Todd's request: full-screen
+  (`width: 100vw`) below `$bp-sm`, a responsive `min(360px, 70vw)` panel
+  from `$bp-sm` up, with a click-to-close backdrop (`rgba(0,0,0,0.3)`).
+  Desktop explicitly neutralizes all of it (`position: sticky`, no
+  backdrop, no shadow) regardless of any leftover `expanded` state, so
+  the fixed/overlay behavior can never leak upward.
+- **Verified:** desktop realigned and otherwise pixel-identical; tablet
+  (850px) collapsed state and 2-up card grid untouched; xs (375px) opens
+  full-screen with working backdrop close; sm (700px) opens the ~360px
+  responsive drawer with a visible dimmed backdrop over the page; true
+  320px still zero horizontal overflow.
+
+## Three-tier nav: drawer on true mobile, inline on tablet
+
+- **What Todd wanted back:** the drawer overlay built for mobile had
+  applied everywhere below desktop (`$bp-lg`), which meant tablet lost
+  its own earlier-approved look — hamburger inline in its own second
+  column, expand pushes content over in place. Todd wanted that restored
+  specifically for tablet, without losing the new drawer for true mobile.
+- **Fix:** added a `@media (min-width: $bp-md)` tier in `Sidebar.scss`
+  that reverts the toggle to `position: static` and the expanded state
+  to `position: sticky` (no backdrop, no shadow, no fixed width) —
+  sitting between the true-mobile drawer (below `$bp-md`) and the
+  existing desktop tier (`$bp-lg`+). Same technique as the earlier
+  desktop-alignment fix: moved `IconRail__top`'s floating-toggle
+  clearance (`padding-top: 40px`) from resetting at `$bp-lg` to
+  resetting at `$bp-md`, since the toggle only floats below `$bp-md` now.
+- **Result — three distinct tiers, not two:** below `$bp-md` (xs/sm) =
+  floating toggle + fixed drawer (full-screen at xs, responsive `sm`
+  width from `$bp-sm`). `$bp-md`–`$bp-lg` (tablet) = inline toggle,
+  in-place push-open, no overlay. `$bp-lg`+ (desktop) = always open, no
+  toggle. Verified all three explicitly: tablet (850px) inline hamburger
+  + push-open confirmed via `getBoundingClientRect`; xs (375px) and sm
+  (700px) both still open as fixed drawers (`position: fixed`, widths
+  100vw and 360px respectively); desktop pixel-unchanged; true 320px
+  still zero horizontal overflow.
+
 ## Working cadence
 
 - **Decision:** scaffold → check → verify, in phases, not one big build.

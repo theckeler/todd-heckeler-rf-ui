@@ -1,26 +1,50 @@
-@use '../styles/tokens.generated' as *;
+@use "../styles/tokens.generated" as *;
+@use "../styles/breakpoints" as *;
 
 .icon-rail {
   width: 63px;
   flex-shrink: 0;
   align-self: flex-start;
-  position: sticky;
+  // position: sticky;
   top: 0;
-  height: 100vh;
+  height: 90vh;
+  height: 100dvh;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: flex-start;
+  gap: $spacing-sm;
   padding: $spacing-md 7.5px;
-  border-right: 1px solid $color-border;
+  padding-top: $spacing-lg * 2;
+  position: relative;
+  z-index: 100;
+  background: $color-surface;
+  position: fixed;
+  transition: height 0.2s ease;
 
-  &__top {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+  @media (min-width: $bp-md) {
+    // Desktop keeps its original approved layout: avatar pinned to the
+    // bottom via space-between. The "pop up below the icon" change is
+    // mobile/tablet only.
+    position: relative;
+    border-right: 1px solid $color-border;
+    padding-top: 0;
   }
+
+  //   &__top {
+  //     display: flex;
+  //     flex-direction: column;
+  //     align-items: flex-start;
+  //     // Clearance for the fixed floating toggle button — true mobile
+  //     // only. At $bp-md the toggle goes back to sitting inline in its own
+  //     // column (not floating), so there's nothing to clear from $bp-md up.
+  //     padding-top: 40px;
+  //
+  //     @media (min-width: $bp-md) {
+  //       padding-top: 0;
+  //     }
+  //   }
 
   &__logo {
     display: flex;
@@ -51,6 +75,15 @@
   }
 
   &__avatar {
+    display: flex;
+    align-items: center;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-md;
+    margin-top: auto;
+  }
+
+  &__avatar_button {
+    border: 0;
     width: 32px;
     height: 32px;
     border-radius: $radius-full;
