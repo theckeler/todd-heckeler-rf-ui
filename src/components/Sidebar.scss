@@ -1,0 +1,118 @@
+@use "../styles/tokens.generated" as *;
+
+.sidebar {
+  width: 215px;
+  flex-shrink: 0;
+  padding: $spacing-md $spacing-sm;
+  border-right: 1px solid $color-border;
+
+  &__header {
+    padding: $spacing-sm $spacing-sm $spacing-md;
+  }
+
+  &__title {
+    font-size: $type-nav-size;
+    font-weight: $type-nav-weight;
+    line-height: $type-nav-lineHeight;
+    color: $color-text-primary;
+    margin: 0;
+  }
+
+  &__details {
+    font-size: $type-nav-detail-size;
+    font-weight: $type-nav-detail-weight;
+    line-height: $type-nav-detail-lineHeight;
+    color: #000;
+    margin: 0;
+    padding: 0 $spacing-sm $spacing-md;
+  }
+
+  &__dot {
+    color: $color-text-muted;
+    margin: 0 2px;
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin: 0 $spacing-sm $spacing-md;
+    padding: $spacing-xs;
+    background: $color-surface-muted;
+    border-radius: $radius-sm;
+    transition: background-color 0.15s ease;
+    min-height: 24px;
+
+    &:hover {
+      background: $color-surface-muted-hover;
+    }
+
+    input {
+      border: none;
+      outline: none;
+      background: none;
+      font-size: 10px;
+      font-weight: $type-nav-detail-weight;
+      width: 100%;
+      color: $color-text-primary;
+
+      &::placeholder {
+        color: $color-text-search;
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__search-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  &__nav {
+    list-style: none;
+    margin: 0;
+    padding: 0 $spacing-sm;
+  }
+
+  &__nav-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    font-size: $type-nav-size;
+    font-weight: $type-nav-weight;
+    color: $color-text-muted;
+
+    &.is-active {
+      background: $color-purple-tint;
+      color: $color-purple;
+    }
+  }
+
+  &__nav-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: $radius-full;
+    background: $color-text-muted;
+    flex-shrink: 0;
+
+    .is-active & {
+      background: $color-purple;
+    }
+  }
+
+  &__subnav {
+    list-style: none;
+    margin: 0;
+    padding: $spacing-xs $spacing-md $spacing-md 48px;
+
+    li {
+      padding: $spacing-sm 0;
+      font-size: $type-nav-size;
+      font-weight: $type-nav-weight;
+      color: $color-text-muted;
+    }
+  }
+}

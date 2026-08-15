@@ -1,0 +1,28 @@
+@use 'tokens.generated' as *;
+@use 'breakpoints' as *;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: $font-family;
+  color: $color-text-primary;
+  background: $color-surface;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
