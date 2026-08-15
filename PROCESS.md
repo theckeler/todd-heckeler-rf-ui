@@ -71,6 +71,15 @@ proposes options against those calls. Entries below are marked accordingly.
 - **Why:** this is portfolio-facing material, not job-search-repo-private
   material, and RainFocus explicitly asked for a hosted link in addition
   to the zip.
+- **Revised:** original plan held the first push until final verify.
+  Todd asked for an earlier checkpoint push instead — repo created,
+  first commit in, before the finishing/responsive passes — rather than
+  batching everything into one push at the end. Repo:
+  https://github.com/theckeler/todd-heckeler-rf-ui. Vercel deploy still
+  pending later phases. Also dropped `src/components/icons.jsx` (dead
+  code left over from the Material Symbols pass, nothing imported it
+  anymore) and kept `.claude/launch.json` out of the repo — that's
+  assistant tooling config, not part of the deliverable.
 
 ## Attendees / Guide screen — first pass
 
@@ -227,9 +236,71 @@ Rough wall-clock time and, where checked, token usage — kept at session
 boundaries rather than per-message. Todd asked for this as a quantitative
 complement to the decision log above.
 
-| Date | Session focus | Notes |
-| --- | --- | --- |
-| 2026-08-15 | Discussion, scaffold, Attendees/Guide layout, Material Symbols icons, live Figma inspection | Single extended session; precise duration/token split not captured in real time — will snapshot via usage-breakdown tooling at a natural checkpoint going forward rather than reconstruct after the fact. |
+| Date | Session focus | Wall-clock | Effective token spend |
+| --- | --- | --- | --- |
+| 2026-08-15 | Discussion → scaffold → Attendees/Guide layout (real Figma data via Dev Mode MCP) → first GitHub push | ~2hr elapsed (breakfast in the middle), ~1.25–1.5hr of actual focused work | Snapshotted via the usage-breakdown tool at session close: ~49% thinking/writing responses, ~29% file edits & terminal, ~12% browser preview & Figma inspection, ~7% recurring system-prompt/tool-list overhead, ~2% task tracking & questions, ~1% Figma Dev Mode MCP calls themselves. |
+
+## Content-area responsive pass
+
+- **What:** after Todd spent ~30-45 minutes hand-revising the nav
+  (sticky positioning already in place, toggle moved into the header,
+  icon sizing tweaks), asked Claude to do a review pass plus make the
+  content area (Step 1 box, Step 2/3 cards, event header, main-content
+  padding) responsive down to 320px — the nav alone doesn't make the
+  page usable on mobile if the content underneath doesn't reflow too.
+- **Bug found in review:** moving the toggle button into
+  `.sidebar__header` and gating the title behind
+  `{expanded && <h1>...}` in JSX meant the title never rendered at
+  desktop at all — `expanded` defaults to `false` and there's no way to
+  toggle it at desktop width since the toggle button itself is
+  `display:none` above the breakpoint. Fixed by always rendering the
+  `<h1>` and moving the show/hide logic to CSS (matching how
+  `.sidebar__content` already works) instead of JSX — consistent with
+  the rest of the collapse system, not a one-off.
+- **Decision:** `.attribute-box__col` gets a `min-width` guard, but
+  scoped to `@media (min-width: $bp-lg)` only — desktop keeps a
+  comfortable minimum column width, everything below that breakpoint
+  ignores it so columns can shrink and wrap freely instead of forcing
+  overflow. Combined with `flex-wrap: wrap` on the container and
+  `flex: 1 1 200px` per column.
+- **Decision:** `.card` (Step 2/3) changed from `flex: 1` (basis 0,
+  shrinks indefinitely) to `flex: 1 1 240px`, and its row containers
+  got `flex-wrap: wrap` — cards now drop to new rows as space runs out
+  rather than compressing into unreadable slivers. Verified 3-up at
+  desktop, 2-up at tablet (~700px), 1-up stacked at 320px.
+- **Also:** `.main-content` padding scales down at `$bp-lg` and
+  `$bp-md`; `.event-header` wraps (button drops below title/date on
+  narrow screens) and the logo shrinks from 95px to 64px below
+  `$bp-md`.
+
+## Tablet tightening + mobile nav question
+
+- **What:** after ~45 more minutes of Todd's own revisions (nav toggle
+  relocated into the header, `.attribute-box`/`.card-row` switched from
+  flex-wrap to CSS Grid `repeat(auto-fill, minmax(...))` — a cleaner
+  self-adjusting pattern than the manual breakpoints Claude had used),
+  reviewed the changes (nothing broken — `BlankCard` commented out
+  consistently in both its export and usage) and tightened tablet-only
+  spacing/type: smaller headings, tighter gaps and card padding, all
+  scoped to `@media (max-width: $bp-lg) and (min-width: $bp-md)` so
+  desktop stays untouched and mobile (still to come) isn't preemptively
+  decided.
+- **Decided, not yet implemented:** for the mobile nav/logo-column
+  question, going with the pure-CSS option — drop the border between the
+  collapsed sidebar and the rail and tighten the gap so the two columns
+  visually read as one, no component restructuring. The state-lifting
+  alternative (toggle button rendered inside `IconRail`, `Sidebar` reads
+  a shared boolean) stays on the table only if the CSS trick doesn't
+  actually solve it once seen at real mobile widths. To be implemented
+  when the mobile pass starts, not now.
+- **Fixed:** the `expanded` toggle state persisted across a resize —
+  open the drawer on mobile/tablet, widen to desktop, narrow back down,
+  and it was still showing expanded instead of collapsed. Added a small
+  `useEffect` in `Sidebar.jsx` with a `matchMedia('(min-width: 1024px)')`
+  listener that resets `expanded` to `false` the moment the viewport
+  crosses back into desktop range — about 10 lines, no new dependencies,
+  didn't warrant the "discuss first" gate Todd asked for on anything
+  JS-heavy.
 
 ## Working cadence
 

@@ -1,10 +1,16 @@
 @use "../styles/tokens.generated" as *;
+@use "../styles/breakpoints" as *;
 
 .card {
-  flex: 1;
+  // flex: 1 1 240px;
   border: 1px solid $color-border;
   border-radius: $radius-sm;
   padding: $spacing-lg $spacing-xl;
+  min-height: 120px;
+
+  @media (max-width: $bp-lg) and (min-width: $bp-md) {
+    padding: $spacing-md $spacing-lg;
+  }
 
   &__heading {
     display: flex;

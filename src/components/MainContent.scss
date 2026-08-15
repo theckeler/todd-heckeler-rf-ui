@@ -1,4 +1,5 @@
 @use "../styles/tokens.generated" as *;
+@use "../styles/breakpoints" as *;
 
 .main-content {
   flex: 1;
@@ -6,11 +7,28 @@
   flex-direction: column;
   gap: $spacing-xxl;
   padding: $spacing-xxl $spacing-xxxl;
+
+  @media (max-width: $bp-lg) {
+    padding: $spacing-xl;
+  }
+
+  // Tablet only ($bp-md–$bp-lg) — tighter than the general $bp-lg rule
+  // above. Mobile (below $bp-md) is its own pass, not touched here.
+  @media (max-width: $bp-lg) and (min-width: $bp-md) {
+    padding: $spacing-lg;
+    gap: $spacing-lg;
+  }
+
+  @media (max-width: $bp-md) {
+    padding: $spacing-lg $spacing-md;
+    gap: $spacing-xl;
+  }
 }
 
 .event-header {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: $spacing-md;
 
   &__logo {
@@ -26,6 +44,16 @@
       object-fit: cover;
       transform: scale(1.4);
     }
+
+    @media (max-width: $bp-lg) and (min-width: $bp-md) {
+      width: 72px;
+      height: 72px;
+    }
+
+    @media (max-width: $bp-md) {
+      width: 64px;
+      height: 64px;
+    }
   }
 
   &__info {
@@ -39,6 +67,10 @@
       font-weight: $type-h1-weight;
       line-height: $type-h1-lineHeight;
       color: $color-text-primary;
+
+      @media (max-width: $bp-lg) and (min-width: $bp-md) {
+        font-size: 26px;
+      }
       margin: 0;
     }
   }
@@ -73,6 +105,10 @@
     font-weight: $type-h2-weight;
     color: $color-text-primary;
     margin: 0;
+
+    @media (max-width: $bp-lg) and (min-width: $bp-md) {
+      font-size: 20px;
+    }
   }
 
   p {
@@ -122,11 +158,19 @@
     align-items: center;
     gap: $spacing-lg;
 
+    @media (max-width: $bp-lg) and (min-width: $bp-md) {
+      gap: $spacing-sm;
+    }
+
     h2 {
       font-size: $type-h3-size;
       font-weight: $type-h3-weight;
       color: $color-text-primary;
       margin: 0;
+
+      @media (max-width: $bp-lg) and (min-width: $bp-md) {
+        font-size: 18px;
+      }
     }
   }
 }
@@ -150,19 +194,33 @@
 }
 
 .attribute-box {
-  display: flex;
+  // display: flex;
+  // flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: $spacing-xl;
   border: 1px solid $color-border;
   border-radius: $radius-sm;
   padding: $spacing-md $spacing-lg;
+  min-height: 120px;
+
+  @media (max-width: $bp-lg) and (min-width: $bp-md) {
+    gap: $spacing-md;
+    padding: $spacing-sm $spacing-md;
+  }
 
   &__col {
-    flex: 1;
+    // flex: 1 1 200px;
     display: flex;
     flex-direction: column;
     gap: $spacing-xs;
     padding: $spacing-sm;
-    max-width: 221px;
+
+    // Min-width is desktop-only — below that it needs to shrink/wrap freely
+    // rather than force overflow on narrow screens.
+    @media (min-width: $bp-lg) {
+      max-width: 221px;
+    }
 
     h3 {
       font-size: $type-card-title-size;
@@ -178,20 +236,30 @@
     }
   }
 }
-
-.card-rows {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
-}
+//
+// .card-rows {
+//   display: flex;
+//   flex-direction: column;
+//   gap: $spacing-md;
+// }
 
 .card-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: $spacing-lg;
+  // max-width: 1073px;
 
-  &--single {
-    .card {
-      flex: 0 1 calc((100% - #{$spacing-lg} * 2) / 3);
-    }
+  @media (max-width: $bp-lg) and (min-width: $bp-md) {
+    gap: $spacing-md;
   }
+
+  //   &--single {
+  //     .card {
+  //       // flex: 1 1 240px;
+  //
+  //       @media (min-width: $bp-lg) {
+  //         flex: 0 1 calc((100% - #{$spacing-lg} * 2) / 3);
+  //       }
+  //     }
+  //   }
 }

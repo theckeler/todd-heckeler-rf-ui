@@ -23,6 +23,6 @@ export function Card({
   );
 }
 
-export function BlankCard() {
-  return <div className="card card--blank" aria-hidden="true" />;
-}
+// export function BlankCard() {
+//   return <div className="card card--blank" aria-hidden="true" />;
+// }

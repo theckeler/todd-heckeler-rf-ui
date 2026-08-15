@@ -5,7 +5,7 @@ import personPortal1 from "../assets/icons/person-portal-1.svg";
 import personPortal2 from "../assets/icons/person-portal-2.svg";
 import personPortal3 from "../assets/icons/person-portal-3.svg";
 import headerLogo from "../assets/images/header-logo.png";
-import { BlankCard, Card } from "./Card";
+import { Card } from "./Card";
 import "./MainContent.scss";
 
 const baseSettings = [
@@ -119,27 +119,23 @@ function MainContent() {
           <p className="step__label">
             <strong>Step 2:</strong> Build registration workflows.
           </p>
-          <div className="card-rows">
-            <div className="card-row">
-              {workflows.map((item, i) => (
-                <Card
-                  key={i}
-                  icon={logicArrow}
-                  title={item.title}
-                  description={item.description}
-                  iconSize="small"
-                />
-              ))}
-            </div>
-            <div className="card-row">
+          <div className="card-row">
+            {workflows.map((item, i) => (
               <Card
-                icon={addCircle}
-                description="Add Registration Workflow"
-                centered
+                key={i}
+                icon={logicArrow}
+                title={item.title}
+                description={item.description}
+                iconSize="small"
               />
-              <BlankCard />
-              <BlankCard />
-            </div>
+            ))}
+            <Card
+              icon={addCircle}
+              description="Add Registration Workflow"
+              centered
+            />
+            {/* <BlankCard />
+              <BlankCard /> */}
           </div>
         </div>
 
@@ -147,7 +143,7 @@ function MainContent() {
           <p className="step__label">
             <strong>Step 3:</strong> Design post-registration experiences.
           </p>
-          <div className="card-row card-row--single">
+          <div className="card-row">
             <Card
               icon={computerIcon}
               title="Attendee Portal"
