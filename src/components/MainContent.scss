@@ -283,15 +283,15 @@
   @media (min-width: $bp-lg) {
     gap: $spacing-lg;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 708px; // 2 × 342 + 24
+    max-width: 708px;
   }
 
-  @media (min-width: 1231px) {
+  @media (min-width: 1262px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     max-width: 1074px;
   }
 
-  @media (min-width: 1783px) {
+  @media (min-width: 1814px) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     max-width: 1440px;
   }

@@ -5,9 +5,11 @@
   position: relative;
   z-index: 1001;
   width: $spacing-xl * 2;
+  pointer-events: none;
 
   @media (min-width: $bp-md) {
     width: auto;
+    pointer-events: auto;
   }
 }
 
@@ -20,9 +22,11 @@
   overflow-x: hidden;
   border-right: 1px solid $color-border;
   transition: width 0.2s ease;
+  pointer-events: none;
 
   @media (min-width: $bp-md) {
     padding: $spacing-md;
+    pointer-events: auto;
   }
 
   &__toggle {
@@ -39,14 +43,21 @@
     position: fixed;
     top: $spacing-md;
     left: $spacing-md;
+    pointer-events: auto;
 
     svg {
       width: 16px;
       height: 16px;
     }
 
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+    }
+
     @media (min-width: $bp-md) {
-      position: static;
+      position: relative;
       top: auto;
       left: auto;
     }
@@ -83,6 +94,7 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.3);
     z-index: 35;
+    pointer-events: auto;
 
     @media (min-width: $bp-md) {
       display: none;
@@ -96,6 +108,7 @@
     z-index: 40;
     background: $color-surface;
     box-shadow: 0 0 24px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
 
     .sidebar__title,
     .sidebar__content {
@@ -162,10 +175,6 @@
         font-weight: 600;
       }
 
-      // Explicit keyboard focus ring. This previously used `outline: none`
-      // with no replacement, which left the input with no visible focus
-      // state at all (WCAG 2.4.7). :focus-visible keeps it off for mouse
-      // clicks and on for keyboard traversal.
       &:focus-visible {
         outline: 2px solid $color-purple;
         outline-offset: 1px;
@@ -228,6 +237,7 @@
 
   @media (min-width: $bp-lg) {
     padding: $spacing-md $spacing-sm;
+    min-width: 215px;
 
     &__toggle {
       display: none;

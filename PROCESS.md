@@ -758,3 +758,57 @@ with 30px of dead space right. At 1783px the fourth column appears with
 cards still at 342px. Tablet and mobile tiers measured identical to before
 (the change is `$bp-lg`-scoped); zero horizontal overflow at true 320px in
 both nav states; production build clean.
+
+## Sidebar width, touch targets, and a tap-blocking bug found by hit-testing
+
+- **Sidebar pinned to Figma's 215px.** Todd spotted that the sidebar was
+  content-sized rather than fixed, and that its width feeds directly into
+  how wide main-content ends up. It measured 184px against Figma's 215px,
+  which was pushing the content column to 1104px instead of the design's
+  1073px. Added `min-width: 215px` at `$bp-lg` — `min-width` rather than
+  `width` so the column can still grow if nav labels ever run long, and
+  scoped to desktop so the mobile drawer and tablet push-open are
+  untouched. With that in, the desktop layout now measures identical to
+  the Figma node tree end to end: rail 63, sidebar 215, body 1169, content
+  1073, cards 341.66 at 24px gaps, three per row with the Add card
+  starting row 2.
+- **Card-grid thresholds re-derived.** The 2/3/4-column tier breakpoints
+  had been calculated against the old 184px sidebar. A 31px wider sidebar
+  moves every threshold, so they were recomputed off the real chrome
+  width (63 rail + 215 sidebar + 96 padding = 374px): 1262px for 3-up,
+  1814px for 4-up. Verified the 4th column still arrives at full 342px
+  width with no shrink at the transition.
+- **Touch targets.** Todd flagged the mobile icons as not fat-finger
+  friendly. Measured: the nav toggle and the avatar button were both
+  32×32 — over WCAG 2.5.8 AA's 24px floor, but under the 44px that Apple
+  HIG and WCAG 2.5.5 AAA ask for, and 44 is the number that matters for
+  thumbs. Todd had deliberately shrunk that toggle earlier because it
+  looked too big, so rather than resize it, the *hit area* was expanded to
+  44×44 with an `::after` at `inset: -6px`. Painted size stays 32px, layout
+  is unaffected, and the extra target area is invisible. Confirmed with
+  `elementFromPoint` probes 4px outside the painted box on all four sides.
+
+### The real find: the collapsed sidebar was eating every tap on the rail
+
+Probing the avatar button didn't just miss at the edges — it missed **dead
+center**, and `elementsFromPoint` showed why: `.sidebar__container` sits at
+`z-index: 1001` over the icon rail's `100`, spanning the same 64px column.
+Below `$bp-md` it's a transparent gutter that exists only to reserve the
+fixed rail's width, so the rail rendered normally *through* it while the
+container swallowed every pointer event aimed at it. The avatar button was
+visible and completely untappable on any phone.
+
+Nothing about this is visible in a screenshot, and it survived every
+earlier pass — including the ones that measured this exact element's box —
+because measuring geometry and measuring *what actually receives the tap*
+are different questions. It only surfaced from asking the second one.
+
+Fixed with `pointer-events: none` on the container below `$bp-md`, with the
+toggle, the expanded drawer, and the backdrop each opting back in via
+`pointer-events: auto`. Verified by hit-testing rather than by eye: avatar
+and toggle both resolve at center and 4px outside all four edges; drawer
+opens and its nav items are hittable; the backdrop is genuinely exposed and
+tap-to-close works at `sm` (360px drawer) where it's visible, and the
+drawer covers the full viewport at `xs` as intended. Tablet still
+push-opens with no backdrop, desktop unchanged and still Figma-exact,
+production build clean.
