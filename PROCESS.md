@@ -75,11 +75,17 @@ proposes options against those calls. Entries below are marked accordingly.
   Todd asked for an earlier checkpoint push instead — repo created,
   first commit in, before the finishing/responsive passes — rather than
   batching everything into one push at the end. Repo:
-  https://github.com/theckeler/todd-heckeler-rf-ui. Vercel deploy still
-  pending later phases. Also dropped `src/components/icons.jsx` (dead
-  code left over from the Material Symbols pass, nothing imported it
-  anymore) and kept `.claude/launch.json` out of the repo — that's
-  assistant tooling config, not part of the deliverable.
+  https://github.com/theckeler/todd-heckeler-rf-ui. Also dropped
+  `src/components/icons.jsx` (dead code left over from the Material
+  Symbols pass, nothing imported it anymore) and kept `.claude/`
+  (launch.json, skills) out of the repo — that's assistant tooling
+  config, not part of the deliverable.
+- **Shipped:** `clean-up` PR'd and merged into `main`
+  ([#1](https://github.com/theckeler/todd-heckeler-rf-ui/pull/1)),
+  linked to Vercel and deployed. Live at
+  https://todd-heckeler-rf-ui.vercel.app — verified rendering and true
+  320px overflow directly against the deployed site, not just the local
+  dev server.
 
 ## Attendees / Guide screen — first pass
 

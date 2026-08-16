@@ -4,6 +4,8 @@ Todd Heckeler's submission for the RainFocus UI Challenge — the
 Attendees/Guide admin screen, matching the provided Figma design and
 responsive from a true 320px viewport through desktop.
 
+**Live:** https://todd-heckeler-rf-ui.vercel.app
+
 See [PROCESS.md](./PROCESS.md) for the decision log — how this was built,
 what was AI-assisted vs. hand-done, and why. See [CLAUDE.md](./CLAUDE.md)
 for the working instructions this repo is built under.

@@ -1,20 +1,9 @@
 @use "../styles/tokens.generated" as *;
 @use "../styles/breakpoints" as *;
 
-// Mobile-first, three tiers:
-//   base (< $bp-md)  — true mobile: toggle floats, expanding opens a fixed
-//                       full-screen/responsive drawer over a dimmed backdrop.
-//   $bp-md ($bp-md–$bp-lg, tablet) — toggle sits inline in its own column;
-//                       expanding grows the sidebar in place and pushes
-//                       main-content over. No overlay, no backdrop, no shadow.
-//   $bp-lg (desktop) — always open, no toggle, nothing to expand.
 .sidebar__container {
   position: relative;
   z-index: 1001;
-  // Reserves the collapsed-width gutter so main-content clears the
-  // floating icon-rail. Only needed while the sidebar itself is fixed
-  // (out of flow) — from $bp-md the sidebar is a normal in-flow element,
-  // so the container just wraps it at its natural width.
   width: $spacing-xl * 2;
 
   @media (min-width: $bp-md) {
@@ -100,9 +89,6 @@
     }
   }
 
-  // Drawer: below tablet, expanding becomes a fixed overlay instead of
-  // pushing content over. Full screen at true xs, a responsive
-  // (not full-width) panel from $bp-sm up.
   &.is-expanded {
     position: fixed;
     inset: 0 auto 0 0;
@@ -120,11 +106,6 @@
       width: min(360px, 70vw);
     }
 
-    // Tablet+: no overlay. The sidebar is still a normal in-flow sticky
-    // element, so growing its width here pushes main-content over —
-    // no absolute positioning or backdrop needed. `top: 0` (not `inset:
-    // auto`) — inset is a shorthand that would also clear `top`, which
-    // is what sticky needs to know where to pin.
     @media (min-width: $bp-md) {
       position: sticky;
       top: 0;
