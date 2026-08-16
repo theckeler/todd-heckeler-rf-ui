@@ -151,7 +151,6 @@
 
     input {
       border: none;
-      outline: none;
       background: none;
       font-size: 10px;
       font-weight: $type-nav-detail-weight;
@@ -161,6 +160,15 @@
       &::placeholder {
         color: $color-text-search;
         font-weight: 600;
+      }
+
+      // Explicit keyboard focus ring. This previously used `outline: none`
+      // with no replacement, which left the input with no visible focus
+      // state at all (WCAG 2.4.7). :focus-visible keeps it off for mouse
+      // clicks and on for keyboard traversal.
+      &:focus-visible {
+        outline: 2px solid $color-purple;
+        outline-offset: 1px;
       }
     }
   }

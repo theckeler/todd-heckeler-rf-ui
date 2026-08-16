@@ -66,7 +66,9 @@ function Sidebar() {
               </svg>
             )}
           </button>
-          <h1 className="sidebar__title">RainFocus Summit</h1>
+          {/* Label for the event context, not the page heading — the
+              page's <h1> lives in MainContent's event header. */}
+          <p className="sidebar__title">RainFocus Summit</p>
         </div>
 
         <div className="sidebar__content">
@@ -76,7 +78,7 @@ function Sidebar() {
 
           <label className="sidebar__search">
             <img src={searchIcon} alt="" className="sidebar__search-icon" />
-            <input type="text" placeholder="Search" />
+            <input type="text" placeholder="Search" aria-label="Search" />
           </label>
 
           <ul className="sidebar__nav">
