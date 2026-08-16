@@ -1,31 +1,28 @@
 @use "../styles/tokens.generated" as *;
 @use "../styles/breakpoints" as *;
 
-// Mobile-first: base rules below are the smallest-screen state (nav
-// collapsed behind a toggle). Desktop is the enhancement, added back at
-// $bp-lg — that's when the sidebar becomes always-open with no toggle.
+// Mobile-first, three tiers:
+//   base (< $bp-md)  — true mobile: toggle floats, expanding opens a fixed
+//                       full-screen/responsive drawer over a dimmed backdrop.
+//   $bp-md ($bp-md–$bp-lg, tablet) — toggle sits inline in its own column;
+//                       expanding grows the sidebar in place and pushes
+//                       main-content over. No overlay, no backdrop, no shadow.
+//   $bp-lg (desktop) — always open, no toggle, nothing to expand.
 .sidebar__container {
   position: relative;
   z-index: 1001;
+  // Reserves the collapsed-width gutter so main-content clears the
+  // floating icon-rail. Only needed while the sidebar itself is fixed
+  // (out of flow) — from $bp-md the sidebar is a normal in-flow element,
+  // so the container just wraps it at its natural width.
   width: $spacing-xl * 2;
 
   @media (min-width: $bp-md) {
-    width: $spacing-xl * 2;
-  }
-}
-
-@media (min-width: $bp-lg) {
-  .sidebar__container {
     width: auto;
-  }
-
-  .sidebar__content {
-    padding: 0;
   }
 }
 
 .sidebar {
-  // flex-shrink: 0;
   align-self: flex-start;
   position: sticky;
   top: 0;
@@ -39,23 +36,17 @@
     padding: $spacing-md;
   }
 
-  &__content {
-    // margin-top: $spacing-sm;
-  }
-
   &__toggle {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
-    // margin: 0 auto;
     border: none;
     background: $color-surface-muted;
     color: $color-text-muted;
     border-radius: $radius-md;
     flex-shrink: 0;
-
     position: fixed;
     top: $spacing-md;
     left: $spacing-md;
@@ -64,18 +55,21 @@
       width: 16px;
       height: 16px;
     }
+
+    @media (min-width: $bp-md) {
+      position: static;
+      top: auto;
+      left: auto;
+    }
   }
 
   &__header {
     display: flex;
     align-items: center;
     gap: $spacing-xs;
-    // padding: $spacing-sm $spacing-sm $spacing-md;
     padding: $spacing-lg $spacing-sm $spacing-md $spacing-xl * 2;
-  }
 
-  @media (min-width: $bp-md) {
-    .sidebar__header {
+    @media (min-width: $bp-md) {
       padding: 0;
     }
   }
@@ -100,13 +94,15 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.3);
     z-index: 35;
+
+    @media (min-width: $bp-md) {
+      display: none;
+    }
   }
 
-  // Drawer: below desktop, the expanded sidebar becomes a fixed overlay
-  // instead of pushing content over. Full screen at true xs, a
-  // responsive (not full-width) panel from $bp-sm up — the rail's own
-  // floating toggle already sits above this, so the drawer starts at
-  // the true left edge rather than being offset by the rail.
+  // Drawer: below tablet, expanding becomes a fixed overlay instead of
+  // pushing content over. Full screen at true xs, a responsive
+  // (not full-width) panel from $bp-sm up.
   &.is-expanded {
     position: fixed;
     inset: 0 auto 0 0;
@@ -115,22 +111,23 @@
     background: $color-surface;
     box-shadow: 0 0 24px rgba(0, 0, 0, 0.15);
 
-    @media (min-width: $bp-md) {
-      .sidebar__header {
-        padding: 0;
-      }
-    }
-
-    .sidebar__title {
-      display: block;
-    }
-
+    .sidebar__title,
     .sidebar__content {
       display: block;
     }
 
     @media (min-width: $bp-sm) {
       width: min(360px, 70vw);
+    }
+
+    // Tablet+: no overlay. The sidebar is still a normal in-flow sticky
+    // element, so growing its width here pushes main-content over —
+    // no absolute positioning or backdrop needed.
+    @media (min-width: $bp-md) {
+      position: sticky;
+      inset: auto;
+      width: min(360px, 50vw);
+      box-shadow: none;
     }
   }
 
@@ -140,16 +137,8 @@
     line-height: $type-nav-detail-lineHeight;
     color: #000;
     margin: 0;
-  }
 
-  @media (min-width: $bp-md) {
-    .sidebar__details {
-      padding: 0;
-    }
-  }
-
-  @media (min-width: $bp-lg) {
-    .sidebar__details {
+    @media (min-width: $bp-lg) {
       margin-top: $spacing-sm;
     }
   }
@@ -243,33 +232,6 @@
     }
   }
 
-  // Tablet ($bp-md–$bp-lg): back to the hamburger living inline in its
-  // own second column, not floating — and expanding pushes content over
-  // in place instead of opening as a fixed drawer. The floating-toggle
-  // drawer overlay is a true-mobile (below $bp-md) pattern only.
-  @media (min-width: $bp-md) {
-    &__toggle {
-      position: static;
-      top: auto;
-      left: auto;
-    }
-
-    &__backdrop {
-      // display: none;
-      z-index: 0;
-    }
-
-    &.is-expanded {
-      position: absolute;
-      z-index: 1001;
-      inset: auto;
-      width: auto;
-      // box-shadow: none;
-      z-index: 1001;
-      min-width: 360px;
-    }
-  }
-
   @media (min-width: $bp-lg) {
     padding: $spacing-md $spacing-sm;
 
@@ -284,21 +246,6 @@
     &__content {
       padding: 0;
       display: block;
-    }
-
-    &__backdrop {
-      display: none;
-    }
-
-    // Desktop never uses the drawer overlay — sidebar stays in normal
-    // flow (sticky, pushes nothing, no backdrop) same as the
-    // non-expanded state, regardless of leftover expanded state.
-    &.is-expanded {
-      position: sticky;
-      inset: auto;
-      width: auto;
-      box-shadow: none;
-      z-index: auto;
     }
   }
 }

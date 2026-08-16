@@ -1,8 +1,6 @@
 @use "../styles/tokens.generated" as *;
 @use "../styles/breakpoints" as *;
 
-// Mobile-first: base padding is the smallest-screen state, enhanced up
-// at $bp-md and $bp-lg. Desktop values match what's already verified.
 .card {
   border: 1px solid $color-border;
   border-radius: $radius-sm;
@@ -69,9 +67,6 @@
   }
 }
 
-// Native <button> reset for the interactive card variant (Add
-// Registration Workflow) — same look as the div card, plus a real
-// cursor/hover affordance since it's an actual button now.
 button.card {
   width: 100%;
   font: inherit;

@@ -531,3 +531,83 @@ complement to the decision log above.
 - **Why:** matches how Todd actually wants to work through this, and it's
   the thing being demonstrated — not just what got built, but the shape
   of the collaboration that built it.
+
+## CSS cleanup pass (`clean-up` branch, off `mobile`)
+
+- **Why this happened:** the prior responsive session ran ~2.25 hours and
+  accumulated the normal residue of iterating live against a running
+  preview — commented-out attempts left in place, one-off overrides
+  layered on top of earlier overrides instead of replacing them, a couple
+  of near-duplicate rules doing the same job two different ways. Todd
+  called it out directly ("kinda made it a mess... spinning a bit out of
+  control") and asked for a dedicated cleanup pass on a fresh branch
+  before any more feature work: find dead/near-duplicate selectors, get
+  the CSS clean, keep every breakpoint's rendered output identical.
+- **Method:** before touching anything, captured a baseline —
+  `getBoundingClientRect` + computed styles for the sidebar, icon-rail,
+  and main-content, at xs (375px), sm (700px), md/tablet (850px), lg/
+  desktop (1400px), plus a true-320px overflow check — for both the
+  collapsed and expanded nav states. That baseline (not memory, not
+  screenshots alone) is what the cleanup was verified against afterward.
+- **`Sidebar.scss` (309 → 251 lines):** removed fully dead
+  commented-out declarations (an old `position: sticky`, a stray
+  `margin: 0 auto`, an empty `&__content {}` block that only ever held a
+  comment), a no-op duplicate (`.sidebar__container` set to the same
+  width twice — once at base, once at `$bp-md`, with no actual change),
+  and three `.sidebar__details` per-breakpoint blocks that had decayed
+  into either no-ops or pure comments.
+- **Real bug found and fixed, not just tidied:** the tablet (`$bp-md`–
+  `$bp-lg`) expanded state had drifted into `position: absolute` with a
+  `z-index: 0` backdrop and a leftover `box-shadow` — none of which
+  matched the documented intent ("push content over in place, no
+  overlay, no shadow") from the session where Todd asked for that
+  behavior back. The backdrop's `z-index: 0` didn't actually hide it —
+  a `position: fixed` element still paints above static in-flow content
+  regardless of a low z-index in an otherwise unstacked context — so
+  tablet's expanded panel was visibly dimming the page behind it, which
+  a side-by-side screenshot confirmed. Rewrote that tier as a genuine
+  in-flow `position: sticky` push-open: `.sidebar__container` goes
+  `width: auto` at `$bp-md`+ so the sidebar's own width change (not a
+  hardcoded number — it falls out of its padding + toggle size, verified
+  at exactly 64px collapsed) is what pushes `main-content` over. Verified
+  by checking `main-content`'s own rect before/after the toggle click:
+  width went from 722px to 427px and its x-offset shifted from 128 to
+  423 — actual layout reflow, not a panel floating on top. No backdrop,
+  no shadow, no absolute positioning left in that tier. This is a
+  deliberate behavior change from what shipped before this branch, not
+  a "look the same" preservation — flagged to Todd rather than silently
+  folded in, since he'd only reviewed tablet's collapsed state closely,
+  not the expanded interaction.
+- **`IconRail.scss` (98 → 82 lines):** removed a fully dead, fully
+  commented-out `&__top` block (13 lines) left over from a layout
+  approach the markup no longer uses at all, a `position: relative`
+  that was immediately overridden by `position: fixed` two lines later
+  in the same rule (dead the moment it was written), and an unused
+  `transition: height 0.2s ease` — nothing in the current markup or CSS
+  ever changes the rail's height, so it had no effect either way.
+- **Self-caught mistake, worth logging honestly:** on the first pass,
+  two declarations got removed by mistake because they looked like
+  duplicates of already-covered rules: `.sidebar__content { padding: 0 }`
+  and `.sidebar__details { margin-top: $spacing-sm }`, both desktop-only.
+  They weren't duplicates — they were real, desktop-specific values that
+  happened to be declared through a differently-shaped selector than the
+  rest of the file. The post-cleanup verification pass caught this: the
+  desktop sidebar measured 32px wider than baseline (216px vs. 184px).
+  Diffed the working tree against the last commit line-by-line rather
+  than trusting the rewrite from memory, found exactly what was missing,
+  restored both, re-verified — desktop matched baseline exactly after.
+  This is the reason the verification step exists as a separate,
+  explicit pass rather than "looks right, ship it."
+- **`MainContent.scss` and `Card.scss`:** read closely, left untouched —
+  already mobile-first with no dead code, no duplicate selectors, and
+  comments only where the reasoning genuinely isn't obvious from the
+  code. `Card.scss`'s `&--blank` modifier is unused by any rendered
+  element right now, but it's the CSS counterpart to the `BlankCard`
+  component Todd explicitly asked to keep commented rather than delete
+  a couple of sessions back — left alone rather than reinterpreted as
+  cleanup scope.
+- **Verified:** all four breakpoints (xs/sm/md/lg) plus true 320px,
+  collapsed and expanded nav states, computed-style-checked against the
+  pre-cleanup baseline (not just screenshots) — everything matches
+  exactly except the deliberate tablet fix above. Production build
+  (`npm run build`) clean, no console errors in the running preview.

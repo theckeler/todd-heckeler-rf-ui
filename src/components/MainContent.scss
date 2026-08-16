@@ -1,9 +1,6 @@
 @use "../styles/tokens.generated" as *;
 @use "../styles/breakpoints" as *;
 
-// Mobile-first: base rules are the smallest-screen state. $bp-md enhances
-// to tablet, $bp-lg enhances to desktop (desktop values match the
-// Figma-verified tokens exactly — not touched by this restructure).
 .main-content {
   flex: 1;
   display: flex;
@@ -26,10 +23,6 @@
   flex-direction: column;
   gap: $spacing-md;
 
-  // Experiment per Todd: true xs (below $bp-sm) gets a full-width banner
-  // icon with the title/date dropping below it. $bp-sm and up goes back
-  // to the side-by-side row — held to Tailwind's xs/sm line specifically
-  // per Todd, not the wider $bp-md mobile range.
   @media (min-width: $bp-sm) {
     flex-direction: row;
     align-items: flex-start;
@@ -48,11 +41,6 @@
       height: 100%;
       object-fit: cover;
 
-      // The 1.4x zoom is tuned to crop out the source image's padding
-      // when it's displayed in a small square box. Applied to the wide
-      // mobile banner instead, that same zoom crops way more of the
-      // image than intended — so it only applies once the logo goes
-      // back to being a square icon at $bp-sm+.
       @media (min-width: $bp-sm) {
         transform: scale(1.4);
       }
@@ -233,11 +221,6 @@
 
 .attribute-box {
   display: grid;
-  // Single column below $bp-sm (safe at any width, including a true
-  // 320px viewport — no minmax floor to overflow). Jumps straight to
-  // the tablet floor (200px) at $bp-sm, matching the header's own
-  // row-layout switch at the same breakpoint — no separate in-between
-  // floor, which was letting a 3rd column sneak in before $bp-md.
   grid-template-columns: 1fr;
   gap: $spacing-sm;
   border: 1px solid $color-border;
@@ -265,8 +248,6 @@
     gap: $spacing-xs;
     padding: $spacing-sm;
 
-    // Min-width is desktop-only — below that it needs to shrink/wrap freely
-    // rather than force overflow on narrow screens.
     @media (min-width: $bp-lg) {
       max-width: 221px;
     }
@@ -288,9 +269,6 @@
 
 .card-row {
   display: grid;
-  // Same reasoning as .attribute-box above — single column below
-  // $bp-sm, straight to the 240px tablet floor at $bp-sm, no separate
-  // in-between floor.
   grid-template-columns: 1fr;
   gap: $spacing-sm;
 
