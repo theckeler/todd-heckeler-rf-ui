@@ -666,3 +666,149 @@ untracked rather than backfilled with another guess.*
   `top` now holds at 0 in both collapsed and expanded states. Re-checked
   xs drawer, sm drawer, and desktop for regressions — all unchanged;
   true 320px still zero overflow; production build clean.
+
+## Fresh-eyes review pass: a11y fixes + Figma grid re-check
+
+Final review before submitting, deliberately run on a different model
+than the build sessions to get something closer to fresh eyes.
+
+- **Stale artifacts in `index.html`.** The page title was still
+  `RainFocus Summit — Claude`, above a comment reading "Real page title
+  TBD once Figma screens land." The screens had landed hours earlier,
+  and the "— Claude" suffix was an assistant-preview convention that a
+  comment had mislabeled as a challenge requirement. It was shipping in
+  the deployed page's browser tab and in the zip. Retitled to
+  `RainFocus Summit — Event Setup Guide`, comment removed.
+- **Two `<h1>`s, identical text.** Both the sidebar label and the event
+  header rendered `<h1>RainFocus Summit</h1>`. The sidebar one is an
+  event-context label, not the page heading — changed to a `<p>`. All
+  visual styling lives on `.sidebar__title`, so computed styles and the
+  element's rect were identical before and after (14px/600, x:71 y:16):
+  a semantics-only change.
+- **Search input had no accessible name.** Its `<label>` wrapped only an
+  `alt=""` icon and the input, so the accessible name was empty —
+  `placeholder` doesn't supply one. Added `aria-label="Search"`.
+- **Focus indicator was suppressed.** `.sidebar__search input` carried
+  `outline: none` with no replacement, so the field had no visible
+  keyboard focus state at all (WCAG 2.4.7). Replaced with an explicit
+  `:focus-visible` ring in brand purple — off for mouse, on for keyboard.
+  Verified by tabbing to it and confirming `:focus-visible` matched with
+  a rendered 2px outline.
+- **Deliberately not fixed:** the nav items are `<div>`s and the subnav
+  items are bare `<li>` text, so the whole navigation is keyboard-
+  inaccessible — the page has five focusable elements total. Making them
+  real links, adding Escape-to-close and a focus trap on the drawer, and
+  wiring `aria-current` is the correct treatment for a production admin
+  screen. Logged as a known gap rather than done, since this is a static
+  design-fidelity sample with no routing behind it; noting it explicitly
+  seemed more honest than either silently shipping it or gold-plating
+  past the brief.
+
+### Re-reading the Figma turned up a structural detail that had been missed
+
+Pulled the node tree again rather than trusting the earlier reading.
+Actual values, at the 1447px frame: content column 1073px; Step 1 items
+**fixed 221px** at 32px gaps; Step 2 and 3 cards **341.67px** at 24px
+gaps — exactly three per row (`341.67 × 3 + 24 × 2 = 1073`).
+
+The detail worth catching: `Item 4` in Step 1 is `hidden="true"`, Step 2's
+row 2 holds the "Add Registration Workflow" card **plus two more card
+instances that render blank**, and Step 3 has two more `hidden="true"`
+slots. The design is a rigid three-column grid throughout, and row 2 is
+deliberately held open. (That also retroactively justifies the `BlankCard`
+component built early and later commented out — it was modeling those
+exact empty slots.)
+
+The build had drifted off this. `repeat(auto-fill, minmax(240px, 1fr))`
+put **four** cards in a single row at desktop — the 240px floor came from
+"what stops it overflowing on mobile," not from the design's real 342px
+card — so the Add button rode up into row 1 and the three-column
+structure flattened. An implementation that does this silently discards a
+deliberate part of the design.
+
+**Decided (Todd's call): cards cap at Figma's width with dead space to the
+right rather than stretching to fill the window, and the Add card is
+allowed to rejoin row 1 — but only once a fourth *full-width* card fits,
+never by shrinking the others to make room.**
+
+Getting there took three attempts, each failing in an instructive way:
+
+1. `minmax(280px, 342px)` — capping the *card*. Broke 1024px down to a
+   single column: when `minmax()` has a definite max, the browser counts
+   tracks from the **max**, not the min.
+2. `auto-fill, minmax(280px, 1fr)` + `max-width` on the grid — capping the
+   *container* instead. A definite `max-width` makes `auto-fill` lock its
+   repetition count to that width regardless of actual space, so 1024px
+   computed three 280px tracks and **overflowed horizontally**.
+3. `auto-fit` — collapses empty tracks, which is wrong here: Step 3 has one
+   card and it stretched to the full row.
+
+Landed on explicit column counts (2 / 3 / 4) with the grid capped to an
+exact multiple of Figma's card (708 / 1074 / 1440px), and
+`minmax(0, 1fr)` tracks so columns shrink instead of overflowing. Tiers
+step up at the viewport widths where another full-size card actually
+clears, so cards grow to 342px, hold, then a column appears — they never
+shrink to accommodate one.
+
+**Verified** at 320 / 375 / 850 / 1024 / 1400 / 1447 / 1783 / 1920, nav
+collapsed and expanded at each. At the 1447px Figma width the build now
+measures three cards of exactly **342px at 24px gaps with the Add card
+starting row 2 at the left margin** — matching the file's own numbers —
+with 30px of dead space right. At 1783px the fourth column appears with
+cards still at 342px. Tablet and mobile tiers measured identical to before
+(the change is `$bp-lg`-scoped); zero horizontal overflow at true 320px in
+both nav states; production build clean.
+
+## Sidebar width, touch targets, and a tap-blocking bug found by hit-testing
+
+- **Sidebar pinned to Figma's 215px.** Todd spotted that the sidebar was
+  content-sized rather than fixed, and that its width feeds directly into
+  how wide main-content ends up. It measured 184px against Figma's 215px,
+  which was pushing the content column to 1104px instead of the design's
+  1073px. Added `min-width: 215px` at `$bp-lg` — `min-width` rather than
+  `width` so the column can still grow if nav labels ever run long, and
+  scoped to desktop so the mobile drawer and tablet push-open are
+  untouched. With that in, the desktop layout now measures identical to
+  the Figma node tree end to end: rail 63, sidebar 215, body 1169, content
+  1073, cards 341.66 at 24px gaps, three per row with the Add card
+  starting row 2.
+- **Card-grid thresholds re-derived.** The 2/3/4-column tier breakpoints
+  had been calculated against the old 184px sidebar. A 31px wider sidebar
+  moves every threshold, so they were recomputed off the real chrome
+  width (63 rail + 215 sidebar + 96 padding = 374px): 1262px for 3-up,
+  1814px for 4-up. Verified the 4th column still arrives at full 342px
+  width with no shrink at the transition.
+- **Touch targets.** Todd flagged the mobile icons as not fat-finger
+  friendly. Measured: the nav toggle and the avatar button were both
+  32×32 — over WCAG 2.5.8 AA's 24px floor, but under the 44px that Apple
+  HIG and WCAG 2.5.5 AAA ask for, and 44 is the number that matters for
+  thumbs. Todd had deliberately shrunk that toggle earlier because it
+  looked too big, so rather than resize it, the *hit area* was expanded to
+  44×44 with an `::after` at `inset: -6px`. Painted size stays 32px, layout
+  is unaffected, and the extra target area is invisible. Confirmed with
+  `elementFromPoint` probes 4px outside the painted box on all four sides.
+
+### The real find: the collapsed sidebar was eating every tap on the rail
+
+Probing the avatar button didn't just miss at the edges — it missed **dead
+center**, and `elementsFromPoint` showed why: `.sidebar__container` sits at
+`z-index: 1001` over the icon rail's `100`, spanning the same 64px column.
+Below `$bp-md` it's a transparent gutter that exists only to reserve the
+fixed rail's width, so the rail rendered normally *through* it while the
+container swallowed every pointer event aimed at it. The avatar button was
+visible and completely untappable on any phone.
+
+Nothing about this is visible in a screenshot, and it survived every
+earlier pass — including the ones that measured this exact element's box —
+because measuring geometry and measuring *what actually receives the tap*
+are different questions. It only surfaced from asking the second one.
+
+Fixed with `pointer-events: none` on the container below `$bp-md`, with the
+toggle, the expanded drawer, and the backdrop each opting back in via
+`pointer-events: auto`. Verified by hit-testing rather than by eye: avatar
+and toggle both resolve at center and 4px outside all four edges; drawer
+opens and its nav items are hittable; the backdrop is genuinely exposed and
+tap-to-close works at `sm` (360px drawer) where it's visible, and the
+drawer covers the full viewport at `xs` as intended. Tablet still
+push-opens with no backdrop, desktop unchanged and still Figma-exact,
+production build clean.
