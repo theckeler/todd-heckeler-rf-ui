@@ -238,13 +238,33 @@ proposes options against those calls. Entries below are marked accordingly.
 
 ## Session log
 
-Rough wall-clock time and, where checked, token usage — kept at session
-boundaries rather than per-message. Todd asked for this as a quantitative
-complement to the decision log above.
+Wall-clock time, but only where Todd stated it himself in the moment —
+not derived from git commit timestamps. An earlier version of this table
+used commit-to-commit gaps as a stand-in for session length, which is a
+bad proxy: the gap between two commits is elapsed clock time, not time
+spent working, and doesn't distinguish focused work from a break, a
+meal, or the project just sitting untouched. That version also
+misattributed the one real figure it had — see the note below the
+table. Originally this also tracked a per-session token-usage
+breakdown, generated via a one-off analysis tool run at the very first
+session's close; that snapshot never got repeated on later sessions, so
+it's dropped here too rather than faked.
 
-| Date | Session focus | Wall-clock | Effective token spend |
-| --- | --- | --- | --- |
-| 2026-08-15 | Discussion → scaffold → Attendees/Guide layout (real Figma data via Dev Mode MCP) → first GitHub push | ~2hr elapsed (breakfast in the middle), ~1.25–1.5hr of actual focused work | Snapshotted via the usage-breakdown tool at session close: ~49% thinking/writing responses, ~29% file edits & terminal, ~12% browser preview & Figma inspection, ~7% recurring system-prompt/tool-list overhead, ~2% task tracking & questions, ~1% Figma Dev Mode MCP calls themselves. |
+| Date | Session focus | Wall-clock (self-reported) |
+| --- | --- | --- |
+| 2026-08-15 | Discussion → scaffold → Attendees/Guide layout (real Figma data via Dev Mode MCP) → first GitHub push | ~2hr elapsed (breakfast in the middle), ~1.25–1.5hr of actual focused work |
+| 2026-08-15 | Content-area responsive pass + tablet tightening — interleaved with two of Todd's own hands-on revision passes | Two manual passes, ~30–45 min each; Claude-side session length in between not tracked |
+| 2026-08-15 | Mobile-first restructure through three-tier nav (branched to `mobile`) — this is the stretch that later prompted the cleanup pass below | ~2.25hr, including one ~30 min manual pass from Todd away from the desk |
+| 2026-08-15 | Dedicated CSS cleanup pass (`clean-up` branch) | Not stated at the time — not tracked here rather than guessed |
+| 2026-08-15 | Todd's own pass catching the tablet-sticky bug, plus the fix, PR merge, Vercel deploy, zip, and final docs | Todd's pass: ~30 min. Rest not tracked. |
+
+*Correction, logged rather than silently fixed: the previous version of
+this table put "~2.25hr" on the cleanup-pass row and invented "~3.5hr"
+for the restructure row above it, both derived from commit-timestamp
+gaps. The 2.25hr figure was actually Todd's own description of the
+restructure session, not the cleanup pass — moved to the correct row.
+The cleanup pass never had a real stated duration, so it's marked
+untracked rather than backfilled with another guess.*
 
 ## Content-area responsive pass
 
