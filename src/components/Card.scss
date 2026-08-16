@@ -1,10 +1,19 @@
 @use "../styles/tokens.generated" as *;
+@use "../styles/breakpoints" as *;
 
 .card {
-  flex: 1;
   border: 1px solid $color-border;
   border-radius: $radius-sm;
-  padding: $spacing-lg $spacing-xl;
+  padding: $spacing-md;
+  min-height: 120px;
+
+  @media (min-width: $bp-md) {
+    padding: $spacing-md $spacing-lg;
+  }
+
+  @media (min-width: $bp-lg) {
+    padding: $spacing-lg $spacing-xl;
+  }
 
   &__heading {
     display: flex;
@@ -55,5 +64,18 @@
     border: none;
     background: $color-surface;
     min-height: 122px;
+  }
+}
+
+button.card {
+  width: 100%;
+  font: inherit;
+  text-align: inherit;
+  background: $color-surface;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: $color-surface-muted;
   }
 }

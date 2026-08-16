@@ -1,6 +1,6 @@
-import IconRail from './components/IconRail'
-import Sidebar from './components/Sidebar'
-import MainContent from './components/MainContent'
+import IconRail from "./components/IconRail";
+import MainContent from "./components/MainContent";
+import Sidebar from "./components/Sidebar";
 
 function App() {
   return (
@@ -9,7 +9,7 @@ function App() {
       <Sidebar />
       <MainContent />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

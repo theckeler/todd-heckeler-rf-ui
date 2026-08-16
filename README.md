@@ -3,7 +3,8 @@
 Todd Heckeler's submission for the RainFocus UI Challenge.
 
 See [PROCESS.md](./PROCESS.md) for the decision log — how this was built,
-what was AI-assisted vs. hand-done, and why.
+what was AI-assisted vs. hand-done, and why. See [CLAUDE.md](./CLAUDE.md)
+for the working instructions this repo is built under.
 
 ## Run it
 
