@@ -611,3 +611,32 @@ complement to the decision log above.
   pre-cleanup baseline (not just screenshots) — everything matches
   exactly except the deliberate tablet fix above. Production build
   (`npm run build`) clean, no console errors in the running preview.
+
+## Tablet expanded menu not sticking on scroll
+
+- **Todd's own pass:** ~30 minutes tightening things up after the
+  cleanup, including catching that `IconRail` was `position: relative`
+  at tablet+ instead of `sticky` — the rail is a fixed `100dvh` tall
+  element in normal flow, so without `sticky` it just scrolls away with
+  the page instead of staying pinned. Fixed directly.
+- **What was still broken:** the tablet *expanded* nav panel (`.sidebar`
+  with `.is-expanded`, `$bp-md`+) still scrolled away, even though it's
+  declared `position: sticky`. `getBoundingClientRect` after a
+  `window.scrollTo` showed `top` moving in lockstep with scroll instead
+  of staying pinned at 0 — sticky in name, not in behavior.
+- **Cause:** the tablet tier for `.is-expanded` reset positioning with
+  `inset: auto;` to cancel out the mobile drawer's `inset: 0 auto 0 0`.
+  `inset` is a shorthand for all four sides at once, so it also
+  overwrote `top`, and sticky positioning has nothing to pin to without
+  an explicit `top`. Higher-specificity class (`.sidebar.is-expanded` vs
+  plain `.sidebar`) meant this silently beat the base rule's `top: 0`.
+  A one-property shorthand mistake that happened to be invisible in a
+  static screenshot — this is why the verification skill checks
+  scroll-position behavior with real numbers, not just layout at rest.
+- **Fix:** replaced `inset: auto` with explicit `top: 0` (plus
+  `right/bottom/left: auto` for the sides that do need resetting from
+  the drawer tier) so sticky has the threshold it needs. Verified via
+  `getBoundingClientRect` before/after a 250px scroll at tablet width —
+  `top` now holds at 0 in both collapsed and expanded states. Re-checked
+  xs drawer, sm drawer, and desktop for regressions — all unchanged;
+  true 320px still zero overflow; production build clean.
